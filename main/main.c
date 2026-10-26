@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <inttypes.h>
 #include <math.h>
 #include <stdlib.h>
 #include "esp_log.h"
@@ -10,6 +11,14 @@
 
 #define READ_SAMPLES  256
 static const char *TAG = "MAIN";
+
+static void format_binary32(uint32_t value, char output[33])
+{
+    for (int bit = 31; bit >= 0; bit--) {
+        output[31 - bit] = ((value >> bit) & 1U) ? '1' : '0';
+    }
+    output[32] = '\0';
+}
 
 void app_main(void)
 {
@@ -58,9 +67,22 @@ void app_main(void)
         if (++read_count >= reads_per_log) {
             double rms = sqrt(sum_sq / sum_n);
             double dbfs = (rms > 0.0) ? 20.0 * log10(rms / 8388608.0) : -999.0;
+            const int32_t raw_signed = buf[0];
+            const uint32_t raw_bits = (uint32_t)raw_signed;
+            const int32_t sample24 = ics43434_to_s24(raw_signed);
+            const uint32_t sample24_bits = (uint32_t)sample24 & 0x00FFFFFFU;
+            char raw_binary[33];
 
-            ESP_LOGI(TAG, "peak=%ld  rms=%.0f  (%.1f dBFS)  first raw=0x%08lX",
-                     (long)peak, rms, dbfs, (unsigned long)buf[0]);
+            format_binary32(raw_bits, raw_binary);
+
+            ESP_LOGI(TAG, "peak=%" PRId32 "  rms=%.0f  (%.1f dBFS)",
+                     peak, rms, dbfs);
+            ESP_LOGI(TAG,
+                     "first raw: signed=%" PRId32 " unsigned=%" PRIu32
+                     " hex=0x%08" PRIX32 " binary=%s",
+                     raw_signed, raw_bits, raw_bits, raw_binary);
+            ESP_LOGI(TAG, "first sample: signed=%" PRId32 " 24-bit=0x%06" PRIX32,
+                     sample24, sample24_bits);
 
 
             read_count = 0;

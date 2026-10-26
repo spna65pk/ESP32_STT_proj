@@ -110,7 +110,7 @@ esp_err_t ics43434_init(const ics43434_config_t *config)
 
         .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(
             I2S_DATA_BIT_WIDTH_32BIT,
-            I2S_SLOT_MODE_STEREO
+            config->channel_mode == ICS43434_CHANNEL_MONO ? I2S_SLOT_MODE_MONO : I2S_SLOT_MODE_STEREO
         ),
 
         .gpio_cfg = {
