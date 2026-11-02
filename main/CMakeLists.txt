@@ -4,12 +4,14 @@ idf_component_register(
         "../code_ICS43434/sources/ics43434.c"
         "../DSP_filter/sources/dsp_filter.c"
         "../Audio_stats/sources/audio_stats_serial.c"
+        "../FFT/sources/fft.c"
 
     INCLUDE_DIRS
         "."
         "../code_ICS43434/headers"
         "../DSP_filter/headers"
         "../Audio_stats/headers/"
+        "../FFT/headers"
 
     REQUIRES
         esp_driver_i2s
